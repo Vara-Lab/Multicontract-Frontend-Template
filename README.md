@@ -81,7 +81,7 @@ const MyComponent = () => {
 
 ### Commands and queries
 
-When calling a contract to make a command or a query, it is the same as [Sails-js](https://github.com/gear-tech/sails) does, with the difference that you choose which contract you will send the message to or read the status to.
+When calling a contract to make a command or a query, it is the same as [Sails-js](https://github.com/gear-tech/sails/tree/master/js) does, with the difference that you choose which contract you will send the message to or read the status to.
 
 - Examples:
 

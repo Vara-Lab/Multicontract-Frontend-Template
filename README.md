@@ -19,7 +19,7 @@ export const sponsorMnemonic = "";
 5. You can try the frontend template on gitpod!
 
 <p align="center">
-  <a href="https://gitpod.io/#https://github.com/Vara-Lab/Chackra-UI-Vite-Sails-Template.git" target="_blank">
+  <a href="https://gitpod.io/#https://github.com/Vara-Lab/Multicontract-Frontend-Template.git" target="_blank">
     <img src="https://gitpod.io/button/open-in-gitpod.svg" width="240" alt="Gitpod">
   </a>
 </p>

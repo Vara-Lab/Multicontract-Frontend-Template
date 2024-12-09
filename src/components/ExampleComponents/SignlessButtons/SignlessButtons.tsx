@@ -4,18 +4,22 @@ import { useAccount, useAlert } from '@gear-js/react-hooks';
 import { useDAppContext } from '@/Context/dappContext';
 import { SignlessForm } from '../../SignlessForm/SignlessForm';
 import { decodeAddress } from '@gear-js/api';
-import { useSailsJs } from '@/Context';
-import { sponsorMnemonic, sponsorName } from '@/app/consts';
+import { CONTRACT_DATA, sponsorMnemonic, sponsorName } from '@/app/consts';
+import { useSailsUtils } from '@/app/hooks';
 import '../ButtonsContainer.css';
 
 export const SignlessButtons = () => {
     const {
         sails,
+        voucherUtils,
+        signlessUtils
+    } = useSailsUtils();
+    const {
         voucherIsExpired,
         renewVoucherAmountOfBlocks,
         voucherBalance,
         addTokensToVoucher
-    } = useSailsJs();
+    } = voucherUtils;
     const alert = useAlert();
 
     const { account } = useAccount();
@@ -28,13 +32,6 @@ export const SignlessButtons = () => {
     const [userFillingTheForm, setUserFillingTheForm] = useState(false);
 
     const sendMessageWithPayload = async (method: string, payload: any) => {
-        console.log(currentVoucherId);
-        
-        if (!sails) {
-            alert.error('SailsCalls is not started!');
-            return;
-        }
-
         if (!signlessAccount) {
             alert.error('no signless account!');
             return
@@ -90,16 +87,20 @@ export const SignlessButtons = () => {
         try {
             alert.info('Will send a message');
 
-            const transaction = sails['PingWalletLess']
-                .services
-                .Ping
-                .functions[method](payload);
+            // account not specified, will use the actual selected account
+            const result = await sails.sendCommand({
+                contractId: CONTRACT_DATA.programId,
+                idl: CONTRACT_DATA.idl,
+                serviceName: 'Ping',
+                methodName: method,
+                account: signlessAccount,
+                voucherId: currentVoucherId,
+                args: [
+                    payload
+                ]
+            })
 
-            transaction.withAccount(signlessAccount);
-            transaction.withVoucher(currentVoucherId);
-            await transaction.calculateGas();
-
-            const { msgId, blockHash, txHash, response } = await transaction.signAndSend();
+            const { msgId, blockHash, txHash, response } = result;
 
             alert.info(`Message in block: ${blockHash}`);
 

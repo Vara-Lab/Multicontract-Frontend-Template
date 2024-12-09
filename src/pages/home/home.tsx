@@ -3,18 +3,21 @@ import { useContext } from 'react';
 import { dAppContext } from '@/Context/dappContext';
 import { Button } from '@gear-js/vara-ui';
 import { useAccount } from '@gear-js/react-hooks';
+import { useSailsUtils } from '@/app/hooks';
 import { 
     NormalButtons,
     VoucherButtons,
     SignlessButtons,
 } from '@/components/ExampleComponents';
-import { useSailsJs } from '@/Context';
 import "./examples.css";
+import { CONTRACT_DATA } from '@/app/consts';
 
 
 function Home () {
-    const { sails } = useSailsJs();
     const { account } = useAccount();
+    const {
+        sails
+    } = useSailsUtils();
     const { 
         currentVoucherId,
         setCurrentVoucherId,
@@ -54,19 +57,12 @@ function Home () {
                     </p>
                 </div>
                 <Button onClick={async () => {
-                    if (!sails) {
-                        console.log('No esta lsita el account o sails');
-                        return;
-                    }
-
-                    const response = await sails['PingWalletLess']
-                        .services
-                        .Ping
-                        .queries
-                        .LastCaller(
-                            '0x0000000000000000000000000000000000000000000000000000000000000000' // Address zero
-                        );
-
+                    const response = await sails.sendQuery({
+                        contractId: CONTRACT_DATA.programId,
+                        idl: CONTRACT_DATA.idl,
+                        serviceName: 'Ping',
+                        methodName: 'LastCaller'
+                    });
 
                     setContractState("Last who call: " + JSON.stringify(response));
                 }}>

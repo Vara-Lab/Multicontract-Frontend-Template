@@ -4,7 +4,8 @@ import { useForm } from 'react-hook-form'
 import { Input, Button, Modal } from '@gear-js/vara-ui';
 import { useAccount, useAlert } from '@gear-js/react-hooks';
 import { decodeAddress, HexString } from '@gear-js/api';
-import { useSailsJs } from '@/Context';
+// import { useSailsJs } from '@/Context';
+import { useSailsUtils } from '@/app/hooks';
 import { CONTRACT_DATA, sponsorMnemonic, sponsorName } from '@/app/consts';
 import CryptoJs from 'crypto-js';
 import './SignlessForm.css';
@@ -36,18 +37,25 @@ const INITIAL_BLOCKS_FOR_VOUCHER = 1_200; // Initial blocks for voucher (one hou
 export const SignlessForm = ({ closeForm }: Props) => {
     const {
         sails,
+        voucherUtils,
+        signlessUtils
+    } = useSailsUtils();
+    const {
         generateVoucher,
         voucherIsExpired,
         renewVoucherAmountOfBlocks,
         voucherBalance,
         vouchersInContract,
         addTokensToVoucher,
+    } = voucherUtils;
+    const {
         createNewKeyringPair,
         lockkeyringPair,
         unlockKeyringPair,
         modifyPairToContract,
         formatContractSignlessData
-    } = useSailsJs();
+    } = signlessUtils;
+    
     const alert = useAlert();
 
     const { account } = useAccount();
@@ -80,11 +88,6 @@ export const SignlessForm = ({ closeForm }: Props) => {
 
 
     const handleConfirmData = async () => {
-        if (!sails) {
-            console.error('SailsCalls is not started')
-            return;
-        }
-
         setLoadingAnAction(true);
 
         const encryptedName = CryptoJs.SHA256(noWalletAccountData.accountName).toString();
@@ -122,21 +125,20 @@ export const SignlessForm = ({ closeForm }: Props) => {
         try {
             alert.info('Will send a message');
 
-            const transaction = sails['PingWalletLess']
-                .services
-                .KeyringService
-                .functions
-                .BindKeyringDataToUserCodedName(
-                    encryptedName, 
+            const result = await sails.sendCommand({
+                contractId: CONTRACT_DATA.programId,
+                idl: CONTRACT_DATA.idl,
+                serviceName: 'KeyringService',
+                methodName: 'BindKeyringDataToUserCodedName',
+                account: newSignlessAccount,
+                voucherId: signlessVoucherId,
+                args: [
+                    encryptedName,
                     formatedLockedSignlessAccount
-                );
-            
-            transaction.withAccount(newSignlessAccount);
-            transaction.withVoucher(signlessVoucherId);
+                ],
+            });
 
-            await transaction.calculateGas();
-
-            const { msgId, blockHash, txHash, response } = await transaction.signAndSend();
+            const { msgId, blockHash, txHash, response } = result;
 
             alert.info(`Message in block: ${blockHash}`);
 
@@ -157,37 +159,35 @@ export const SignlessForm = ({ closeForm }: Props) => {
     };
 
     const handleSubmitPassword = async ({ password }: FormDefaultValuesI) => {
-        if (!account || !sails) {
-            alert.error('Account or SailsCalls is not ready');
+        if (!account) {
+            alert.error('Account is not ready');
             return;
         }
 
         setLoadingAnAction(true);
 
-        const contractState: any = await sails['PingWalletLess']
-            .services
-            .KeyringService
-            .queries
-            .KeyringAddressFromUserAddress(
-                '0x0000000000000000000000000000000000000000000000000000000000000000', // Address zero
-                undefined,
-                undefined,
+        const contractState = await sails.sendQuery({
+            contractId: CONTRACT_DATA.programId,
+            idl: CONTRACT_DATA.idl,
+            serviceName: 'KeyringService',
+            methodName: 'KeyringAddressFromUserAddress',
+            args: [
                 account.decodedAddress
-            );
+            ]
+        });
 
         const { signlessAccountAddress } = contractState;
 
         if (signlessAccountAddress) {
-            const contractState: any = await sails['PingWalletLess']
-                .services
-                .KeyringService
-                .queries
-                .KeyringAccountData(
-                    '0x0000000000000000000000000000000000000000000000000000000000000000', // Address zero
-                    undefined,
-                    undefined,
+            const contractState = await sails.sendQuery({
+                contractId: CONTRACT_DATA.programId,
+                idl: CONTRACT_DATA.idl,
+                serviceName: 'KeyringService',
+                methodName: 'KeyringAccountData',
+                args: [
                     signlessAccountAddress
-                );
+                ]
+            });
 
             const { signlessAccountData } = contractState;
 
@@ -270,21 +270,20 @@ export const SignlessForm = ({ closeForm }: Props) => {
         try {
             alert.info('Will send a message');
 
-            const transaction = sails['PingWalletLess']
-                .services
-                .KeyringService
-                .functions
-                .BindKeyringDataToUserAddress(
+            const result = await sails.sendCommand({
+                contractId: CONTRACT_DATA.programId,
+                idl: CONTRACT_DATA.idl,
+                serviceName: 'KeyringService',
+                methodName: 'BindKeyringDataToUserAddress',
+                account: newSignlessAccount,
+                voucherId: signlessVoucherId,
+                args: [
                     account.decodedAddress,
                     formatedLockedSignlessAccount
-                );
+                ],
+            });
             
-            transaction.withAccount(newSignlessAccount);
-            transaction.withVoucher(signlessVoucherId);
-
-            await transaction.calculateGas();
-
-            const { msgId, blockHash, txHash, response } = await transaction.signAndSend();
+            const { msgId, blockHash, txHash, response } = result;
 
             alert.info(`Message in block: ${blockHash}`);
 
@@ -306,25 +305,19 @@ export const SignlessForm = ({ closeForm }: Props) => {
     }
 
     const handleSubmitNoWalletSignless = async ({accountName, password}: FormDefaultValuesI) => {
-        if (!sails) {
-            alert.error('SailsCalls is not ready');
-            return;
-        }
-
         setLoadingAnAction(true);
 
         const encryptedName = CryptoJs.SHA256(accountName).toString();
-
-        let contractState: any = await sails['PingWalletLess']
-            .services
-            .KeyringService
-            .queries
-            .KeyringAddressFromUserCodedName(
-                '0x0000000000000000000000000000000000000000000000000000000000000000', // Address zero
-                undefined,
-                undefined,
+        
+        let contractState = await sails.sendQuery({
+            contractId: CONTRACT_DATA.programId,
+            idl: CONTRACT_DATA.idl,
+            serviceName: 'KeyringService',
+            methodName: 'KeyringAddressFromUserCodedName',
+            args: [
                 encryptedName
-            );
+            ]
+        });
 
         const { signlessAccountAddress } = contractState;
 
@@ -334,16 +327,15 @@ export const SignlessForm = ({ closeForm }: Props) => {
             return;
         }
 
-        contractState = await sails['PingWalletLess']
-            .services
-            .KeyringService
-            .queries
-            .KeyringAccountData(
-                '0x0000000000000000000000000000000000000000000000000000000000000000', // Address zero
-                undefined,
-                undefined,
+        contractState = await sails.sendQuery({
+            contractId: CONTRACT_DATA.programId,
+            idl: CONTRACT_DATA.idl,
+            serviceName: 'KeyringService',
+            methodName: 'KeyringAccountData',
+            args: [
                 signlessAccountAddress
-            );
+            ]
+        });
 
         const { signlessAccountData } = contractState;
 

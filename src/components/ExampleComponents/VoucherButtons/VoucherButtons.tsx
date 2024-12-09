@@ -2,8 +2,8 @@ import { Button } from '@gear-js/vara-ui';
 import { useAccount, useAlert } from '@gear-js/react-hooks';
 import { useDAppContext } from '@/Context/dappContext';
 import { HexString } from '@gear-js/api';
-import { useSailsJs } from '@/Context';
 import { web3FromSource } from '@polkadot/extension-dapp';
+import { useSailsUtils } from '@/app/hooks';
 import { CONTRACT_DATA, sponsorMnemonic, sponsorName } from '@/app/consts';
 import '../ButtonsContainer.css';
 
@@ -13,24 +13,25 @@ export const VoucherButtons = () => {
         currentVoucherId,
         setCurrentVoucherId
     } = useDAppContext();
-
-    // const sails = useSailsCalls();
     const {
         sails,
+        voucherUtils
+    } = useSailsUtils();
+    const {
         generateVoucher,
         voucherIsExpired,
         renewVoucherAmountOfBlocks,
         voucherBalance,
         vouchersInContract,
         addTokensToVoucher
-    } = useSailsJs();
+    } = voucherUtils;
     const alert = useAlert();
 
     const manageVoucherId = async (voucherId: HexString): Promise<void> => {
         return new Promise(async (resolve, reject) => {
-            if (!account || !sails) {
-                alert.error('Account or sails is not ready');
-                reject('Account or sails is not ready');
+            if (!account) {
+                alert.error('Account is not ready');
+                reject('Account is not ready');
                 return;
             }
 
@@ -81,11 +82,6 @@ export const VoucherButtons = () => {
     }
 
     const sendMessageWithMethodAndVoucher = async (method: string) => {
-        if (!sails) {
-            alert.error('SailsCalls is not started!');
-            return;
-        }
-
         if (!account) {
             alert.error('Account is not ready');
             return;
@@ -98,10 +94,6 @@ export const VoucherButtons = () => {
                 account.decodedAddress,
                 CONTRACT_DATA.programId
             );
-            // const vouchersForAddress = await vouchersIdOfAddress(
-            //     sails,
-            //     account.decodedAddress
-            // );
 
             if (vouchersForAddress.length === 0) {
                 alert.info('Will create a voucher!');
@@ -130,17 +122,17 @@ export const VoucherButtons = () => {
         try {
             alert.info('Will send a message');
 
-            const transaction = sails['PingWalletLess']
-                .services
-                .Ping
-                .functions[method]();
-            
-            transaction.withAccount(account.decodedAddress, { signer });
-            transaction.withVoucher(voucherIdToUse);
+            // account not specified, will use the actual selected account
+            const result = await sails.sendCommand({
+                contractId: CONTRACT_DATA.programId,
+                idl: CONTRACT_DATA.idl,
+                serviceName: 'Ping',
+                methodName: method,
+                voucherId: voucherIdToUse
+            })
 
-            await transaction.calculateGas();
 
-            const { msgId, blockHash, txHash, response } = await transaction.signAndSend();
+            const { msgId, blockHash, txHash, response } = result;
 
             alert.info(`Message in block: ${blockHash}`);
 

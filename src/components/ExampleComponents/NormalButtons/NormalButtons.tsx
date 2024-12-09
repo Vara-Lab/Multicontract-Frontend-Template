@@ -1,41 +1,26 @@
 import { Button } from '@gear-js/vara-ui';
-import { useAccount, useAlert } from '@gear-js/react-hooks';
-import { useSailsJs } from '@/Context';
-import { web3FromSource } from '@polkadot/extension-dapp';
+import { useAlert } from '@gear-js/react-hooks';
+import { useSailsUtils } from '@/app/hooks';
+import { CONTRACT_DATA } from '@/app/consts';
 import '../ButtonsContainer.css';
 
 export const NormalButtons = () => {
-    const { account } = useAccount();
-    const {
-        sails,
-    } = useSailsJs();
+    const { sails } = useSailsUtils();
     const alert = useAlert();
 
     const sendMessageWithMethod = async (method: string) => {
-        if (!sails) {
-            alert.error('SailsCalls is not started!');
-            return;
-        }
-
-        if (!account) {
-            alert.error('Account is not ready');
-            return;
-        }
-
-        const { signer } = await web3FromSource(account.meta.source);
-
         try {
             alert.info('Will send a message');
 
-            const transaction = sails['PingWalletLess']
-                .services
-                .Ping
-                .functions[method]();
+            // account not specified, will use the actual selected account
+            const result = await sails.sendCommand({
+                contractId: CONTRACT_DATA.programId,
+                idl: CONTRACT_DATA.idl,
+                serviceName: "Ping",
+                methodName: method
+            });
 
-            transaction.withAccount(account.decodedAddress, { signer });
-            await transaction.calculateGas();
-
-            const { msgId, blockHash, txHash, response } = await transaction.signAndSend();
+            const { msgId, blockHash, txHash, response } = result;
 
             alert.info(`Message in block: ${blockHash}`);
 

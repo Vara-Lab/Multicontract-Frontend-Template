@@ -9,7 +9,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ADDRESS } from '@/app/consts';
 import { Alert, alertStyles } from '@gear-js/vara-ui';
-import { DAppContextProvider, SailsProvider } from "@/Context";
+import { DAppContextProvider } from "@/Context";
 import { name as appName } from '../../../package.json';
 
 const queryClient = new QueryClient({
@@ -45,7 +45,6 @@ function QueryProvider({ children }: ProviderProps) {
 
 const providers = [
   DAppContextProvider,
-  SailsProvider,
   BrowserRouter, 
   AlertProvider, 
   ApiProvider, 

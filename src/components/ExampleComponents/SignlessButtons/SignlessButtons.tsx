@@ -5,7 +5,7 @@ import { useDAppContext } from '@/Context/dappContext';
 import { SignlessForm } from '../../SignlessForm/SignlessForm';
 import { decodeAddress } from '@gear-js/api';
 import { CONTRACT_DATA, sponsorMnemonic, sponsorName } from '@/app/consts';
-import { useSailsUtils } from '@/app/hooks';
+import { useMulticontractSails } from '@/app/hooks';
 import '../ButtonsContainer.css';
 
 export const SignlessButtons = () => {
@@ -13,7 +13,7 @@ export const SignlessButtons = () => {
         sails,
         voucherUtils,
         signlessUtils
-    } = useSailsUtils();
+    } = useMulticontractSails();
     const {
         voucherIsExpired,
         renewVoucherAmountOfBlocks,

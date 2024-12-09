@@ -3,7 +3,7 @@ import { useAccount, useAlert } from '@gear-js/react-hooks';
 import { useDAppContext } from '@/Context/dappContext';
 import { HexString } from '@gear-js/api';
 import { web3FromSource } from '@polkadot/extension-dapp';
-import { useSailsUtils } from '@/app/hooks';
+import { useMulticontractSails } from '@/app/hooks';
 import { CONTRACT_DATA, sponsorMnemonic, sponsorName } from '@/app/consts';
 import '../ButtonsContainer.css';
 
@@ -16,7 +16,7 @@ export const VoucherButtons = () => {
     const {
         sails,
         voucherUtils
-    } = useSailsUtils();
+    } = useMulticontractSails();
     const {
         generateVoucher,
         voucherIsExpired,

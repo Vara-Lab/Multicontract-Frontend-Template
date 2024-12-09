@@ -5,7 +5,7 @@ import { Input, Button, Modal } from '@gear-js/vara-ui';
 import { useAccount, useAlert } from '@gear-js/react-hooks';
 import { decodeAddress, HexString } from '@gear-js/api';
 // import { useSailsJs } from '@/Context';
-import { useSailsUtils } from '@/app/hooks';
+import { useMulticontractSails } from '@/app/hooks';
 import { CONTRACT_DATA, sponsorMnemonic, sponsorName } from '@/app/consts';
 import CryptoJs from 'crypto-js';
 import './SignlessForm.css';
@@ -39,7 +39,7 @@ export const SignlessForm = ({ closeForm }: Props) => {
         sails,
         voucherUtils,
         signlessUtils
-    } = useSailsUtils();
+    } = useMulticontractSails();
     const {
         generateVoucher,
         voucherIsExpired,
@@ -55,7 +55,7 @@ export const SignlessForm = ({ closeForm }: Props) => {
         modifyPairToContract,
         formatContractSignlessData
     } = signlessUtils;
-    
+
     const alert = useAlert();
 
     const { account } = useAccount();

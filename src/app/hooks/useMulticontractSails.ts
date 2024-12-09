@@ -87,10 +87,10 @@ export interface CommandI {
 }
 
 /**
- * # useSailsUtils Hook
+ * # useMulticontractSails Hook
  * @returns Util functions to work with sails, vouchers, signless and walletless feature
  */
-export const useSailsUtils = () => {
+export const useMulticontractSails = () => {
     const { api: gearApi } = useApi();
     const { account: connectedAccount } = useAccount();
 

@@ -3,7 +3,7 @@ import { useContext } from 'react';
 import { dAppContext } from '@/Context/dappContext';
 import { Button } from '@gear-js/vara-ui';
 import { useAccount } from '@gear-js/react-hooks';
-import { useSailsUtils } from '@/app/hooks';
+import { useMulticontractSails } from '@/app/hooks';
 import { 
     NormalButtons,
     VoucherButtons,
@@ -17,7 +17,7 @@ function Home () {
     const { account } = useAccount();
     const {
         sails
-    } = useSailsUtils();
+    } = useMulticontractSails();
     const { 
         currentVoucherId,
         setCurrentVoucherId,

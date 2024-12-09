@@ -32,10 +32,10 @@ The template has a custom hook which gives you all the necessary functions to be
   - `sendCommand`: This function will send a message to a contract given its id, idl, the service and methods to call. Examples:
 
     ```jsx
-    import { useSailsUtils } from '@/app/hooks';
+    import { useMulticontractSails } from '@/app/hooks';
 
     const SendTransaction = () => {
-      const { sails } = useSailsUtils();
+      const { sails } = useMulticontractSails();
 
       const handleClick = async () => {
         const result = await sails.sendCommand({
@@ -68,10 +68,10 @@ The template has a custom hook which gives you all the necessary functions to be
 
     ```jsx
     import { useState } from 'react';
-    import { useSailsUtils } from '@/app/hooks';
+    import { useMulticontractSails } from '@/app/hooks';
 
     const State = () => {
-      const { sails } = useSailsUtils();
+      const { sails } = useMulticontractSails();
       const [contractState, setContractState] = useState("");
 
       const handleClick = async () => {
@@ -106,7 +106,7 @@ The template has a custom hook which gives you all the necessary functions to be
   ```jsx
     const {
         voucherUtils
-    } = useSailsUtils();
+    } = useMulticontractSails();
     const {
         generateVoucher,
         voucherIsExpired,
@@ -198,7 +198,7 @@ The template has a custom hook which gives you all the necessary functions to be
   ```javascript
   const {
         signlessUtils
-    } = useSailsUtils();
+    } = useMulticontractSails();
     const {
         createNewKeyringPair,
         lockkeyringPair,

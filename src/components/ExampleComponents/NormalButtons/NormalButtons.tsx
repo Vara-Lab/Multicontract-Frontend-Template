@@ -1,11 +1,11 @@
 import { Button } from '@gear-js/vara-ui';
 import { useAlert } from '@gear-js/react-hooks';
-import { useSailsUtils } from '@/app/hooks';
+import { useMulticontractSails } from '@/app/hooks';
 import { CONTRACT_DATA } from '@/app/consts';
 import '../ButtonsContainer.css';
 
 export const NormalButtons = () => {
-    const { sails } = useSailsUtils();
+    const { sails } = useMulticontractSails();
     const alert = useAlert();
 
     const sendMessageWithMethod = async (method: string) => {
